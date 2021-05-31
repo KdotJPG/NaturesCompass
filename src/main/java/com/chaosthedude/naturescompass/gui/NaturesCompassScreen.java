@@ -44,6 +44,7 @@ public class NaturesCompassScreen extends Screen {
 	private Button sortByButton;
 	private TransparentTextField searchTextField;
 	private BiomeSearchList selectionList;
+	private SortCategoryList sortCategoryList;
 	private ISortingCategory sortingCategory;
 
 	public NaturesCompassScreen(World world, PlayerEntity player, ItemStack stack, NaturesCompassItem natureCompass, List<ResourceLocation> allowedBiomes) {
@@ -73,6 +74,10 @@ public class NaturesCompassScreen extends Screen {
 			selectionList = new BiomeSearchList(this, minecraft, width + 110, height, 40, height, 45);
 		}
 		children.add(selectionList);
+		if (sortCategoryList == null) {
+			sortCategoryList = new SortCategoryList(this, minecraft, width - 240, height - 30, 110, height - 30, 15);
+		}
+		children.add(sortCategoryList);
 	}
 
 	@Override
@@ -94,6 +99,7 @@ public class NaturesCompassScreen extends Screen {
 	public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
 		renderBackground(stack);
 		selectionList.render(stack, mouseX, mouseY, partialTicks);
+		sortCategoryList.render(stack, mouseX, mouseY, partialTicks);
 		searchTextField.render(stack, mouseX, mouseY, partialTicks);
 		drawCenteredString(stack, font, I18n.format("string.naturescompass.selectBiome"), 65, 15, 0xffffff);
 		super.render(stack, mouseX, mouseY, partialTicks);
@@ -144,6 +150,13 @@ public class NaturesCompassScreen extends Screen {
 	public ISortingCategory getSortingCategory() {
 		return sortingCategory;
 	}
+	
+	public void setSortingCategory(ISortingCategory sortingCategory) {
+		this.sortingCategory = sortingCategory;
+		sortCategoryList.collapse();
+		sortByButton.setMessage(new StringTextComponent(I18n.format("string.naturescompass.sortBy") + ": " + sortingCategory.getLocalizedName()));
+		selectionList.refreshList();
+	}
 
 	public void processSearchTerm() {
 		biomesMatchingSearch = new ArrayList<Biome>();
@@ -169,9 +182,7 @@ public class NaturesCompassScreen extends Screen {
 			minecraft.displayGuiScreen(null);
 		}));
 		sortByButton = addButton(new TransparentButton(10, 90, 110, 20, new StringTextComponent(I18n.format("string.naturescompass.sortBy") + ": " + sortingCategory.getLocalizedName()), (onPress) -> {
-			sortingCategory = sortingCategory.next();
-			sortByButton.setMessage(new StringTextComponent(I18n.format("string.naturescompass.sortBy") + ": " + sortingCategory.getLocalizedName()));
-			selectionList.refreshList();
+			sortCategoryList.expand();
 		}));
 		infoButton = addButton(new TransparentButton(10, 65, 110, 20, new TranslationTextComponent("string.naturescompass.info"), (onPress) -> {
 			if (selectionList.hasSelection()) {
